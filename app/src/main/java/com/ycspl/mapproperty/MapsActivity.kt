@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -20,8 +19,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.ycspl.mapproperty.databinding.ActivityMapsBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -94,7 +91,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 }
                 viewModel.insertLocation(propertyName.toString())
                 showToast("Property Location Saved successfully")
-                bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                collapseBottomSheet(binding.fabButton)
             }
         }
     }
@@ -124,21 +121,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         val isExpanded = savedInstanceState.getBoolean(STATE_EXPANDED)
         if (isExpanded) {
             val propertyName = savedInstanceState.getString(PROPERTY_NAME, "")
-            expandBottomSheet(binding.openForm, propertyName)
+            expandBottomSheet(binding.fabButton, propertyName)
         }
     }
 
     private fun handleFabClick() {
-        binding.openForm.setOnClickListener {
+        binding.fabButton.setOnClickListener {
             if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-                it.rotation = 0f
-                mMap.clear()
-                binding.mapOverlay.isClickable = false
-                bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                collapseBottomSheet(it)
             } else {
                 expandBottomSheet(it)
             }
         }
+    }
+
+    private fun collapseBottomSheet(view: View) {
+        view.rotation = 0f
+        mMap.clear()
+        binding.mapOverlay.isClickable = false
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     private fun expandBottomSheet(view: View, propertyName: String = "") {
